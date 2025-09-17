@@ -28,8 +28,8 @@ Summary of samples, isolates and MAGs:
 |BMT108 D0	| 2	|Yes	|90.46	|40.12|
 
 ## Extracting E.coli reads from stool seqeunces
-Processed reads were mapped to their respective binned MAGs. Reads that mapped to bins annotated as E.coli were extracted
-Scripts for this step are stored under extractreads/
+Processed reads were mapped to their respective binned MAGs. Reads that mapped to bins annotated as E.coli were extracted.
+> Scripts for this step are stored under extractreads/
 
 ## Instrain profile
 [Instrain](https://instrain.readthedocs.io/en/latest/) was utilized to profile samples and identify SNVs in genes of interest.
