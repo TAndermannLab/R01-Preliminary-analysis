@@ -1,0 +1,269 @@
+---
+title: "R01 SNV plots"
+author: "Prisca Lim"
+date: "2025-09-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(data.table)
+library(ggplot2)
+library(ggpubr)
+library(scales)
+library(rstatix)
+```
+
+
+```{r}
+##Original datafiles that have been processed into RDS files
+# snvs_TAB679 <- fread("TAB679_annotated_SNVs.tsv",header=T)
+
+# snvs_1801.21 <- fread("1801.21_annotated_SNVs.tsv",header=T)
+
+# tolerance <- read.csv("ToleranceBins.csv",header=T)
+# tolerance$tolerance_bin <- gsub("Low","Low/No", tolerance$tolerance_bin)
+```
+
+--Figure for **all** isolates, with BMT116 D-3 (TAB679) as reference--
+```{r}
+##Cleaning and organizing the data for plot, don't run this code chunk!
+# genes_of_interest <- c("relA","hipA","ptsI")
+
+# snvs_TAB679_subset <- snvs_TAB679 %>% 
+#   filter(gene_name %in% genes_of_interest)%>%
+#   filter(mutation_type == "N")
+# 
+# gene_count <- snvs_TAB679_subset %>%
+#   group_by(sample,gene_name) %>%
+#   summarize(count=n(), .groups = "drop") %>%
+#   pivot_wider(names_from = gene_name, values_from = count, values_fill = 0) 
+# 
+# gene_count_bins <- gene_count %>%
+#   left_join(tolerance %>% select(sample, tolerance_bin), by = "sample")  %>%
+#    pivot_longer(
+#     cols = 2:4,                # columns with gene counts
+#     names_to = "gene",
+#     values_to = "count"
+#   ) %>%
+#   filter(!is.na(tolerance_bin)) 
+# 
+# all_count <- snvs_TAB679 %>%
+#   filter(mutation_type == "N") %>%
+#   group_by(sample) %>%
+#   summarize(count=n(), .groups = "drop") 
+# 
+# all_count_bins <- all_count %>%
+#   left_join(tolerance %>% select(sample, tolerance_bin), by = "sample") %>% 
+#   filter(!is.na(tolerance_bin))
+# 
+# all_count_bins$gene <- "all genes"
+# 
+# all_count_bins <- all_count_bins[, c("sample", "tolerance_bin", "gene", "count")]
+# 
+# combined_bins <- rbind(gene_count_bins,all_count_bins)
+# 
+# combined_bins$tolerance_bin <- factor(combined_bins$tolerance_bin, 
+#                                    levels = c("Low/No","Medium","High"))
+# combined_bins$gene <- factor(combined_bins$gene,
+#                           levels = c("hipA","relA","ptsI","all genes"))
+# 
+# saveRDS(combined_bins, file="all_isolates.RDS")
+```
+
+```{r}
+snvs_bins_all <- readRDS('all_isolates.RDS')
+# If you want to exclude the outlier sample, add the following filter command above
+# %>%
+#   filter(sample != "BMT108D-33_EcoliC1")
+
+snvs_bins_all_summary <- snvs_bins_all %>%
+  group_by(gene, tolerance_bin) %>%
+  summarise(
+    n_isolates = n(),
+    .groups = "drop") %>%
+  left_join(
+    snvs_bins_all %>%
+      group_by(gene) %>%
+      summarise(max_y = max(count, na.rm = TRUE), .groups = "drop"),
+    by = "gene"
+  ) %>%
+  mutate(y_pos = max_y*1.5)  
+
+#--Running wilcoxon test, ptsI gene is not included because it's not detected in Low/High bins--
+snvs_bins_all_filtered <- snvs_bins_all %>%
+  filter(gene != "ptsI")
+
+all_stat.test <- snvs_bins_all_filtered %>%
+  group_by(gene) %>%  # or gene, if faceting by gene
+  pairwise_wilcox_test(
+    count ~ tolerance_bin,
+    paired = FALSE,             
+    p.adjust.method = "BH"
+  ) %>%
+  mutate(
+    p.signif = case_when(
+      p <= 0.001 ~ "***",
+      p <= 0.01 ~ "**",
+      p <= 0.05 ~ "*",
+      TRUE ~ NA_character_    
+    )
+  ) %>%
+  filter(!is.na(p.signif))  
+
+all_stat.test <-  all_stat.test %>%
+  left_join(snvs_bins_all_summary %>% select(gene, max_y) %>% distinct(), by = "gene") %>%
+  group_by(gene) %>%
+  arrange(p) %>%
+  mutate( y.position = max_y + 0.1 * max_y + row_number() * 0.1 * max_y) %>%
+  ungroup()
+
+all_stat.test <- all_stat.test %>%
+  mutate(
+    group1 = factor(group1, levels = levels(snvs_bins_all$tolerance_bin)),
+    group2 = factor(group2, levels = levels(snvs_bins_all$tolerance_bin))
+  )
+
+#--ggplot: you can adjust sizes of specific elements on plot here--
+gene_snvs <- ggplot(snvs_bins_all, aes(x = tolerance_bin, y = count, fill = tolerance_bin )) +
+   geom_boxplot(width = 0.1) +
+   facet_wrap(~gene, scales = "free_y") +  # adjust 'scales' if needed
+  stat_pvalue_manual(
+    all_stat.test,
+    label = "p.signif",
+    tip.length = 0.01,
+    bracket.size = 0.25,
+    size=3,
+    inherit.aes = FALSE) +
+  labs(title = "* = p < 0.05, ** = p < 0.01, *** = p < 0.001",
+       x = "Tolerance Bin",
+       y = "# non-synonymous SNVs") +
+    geom_text(data = snvs_bins_all_summary,
+            aes(x = tolerance_bin, y = y_pos, label = paste0("n=", n_isolates)),
+            inherit.aes = FALSE,
+            size = 2) +
+  theme_classic(base_size = 8) +
+  theme(legend.position = "none", 
+        panel.grid = element_blank(), 
+        strip.text = element_text(size=7))
+
+gene_snvs
+
+#Use height and width to adjust size, dpi to adjust text size/resolution for entire figure
+ggsave("all_isolates_snvs.png",plot=gene_snvs, width=4, height=3, dpi=300)
+```
+
+--Figure for **1801.21** isolates, using D56 (TAB1084) as reference--
+```{r}
+##Cleaning and organizing the data for plot, don't run this code chunk!
+# genes_of_interest <- c("relA","hipA")
+# 
+# snvs_1801.21_subset <- snvs_1801.21 %>%
+#   filter(gene_name %in% genes_of_interest)%>%
+#   filter(mutation_type == "N")
+# 
+# gene_count <- snvs_1801.21_subset %>%
+#   group_by(sample,gene_name) %>%
+#   summarize(count=n(), .groups = "drop") %>%
+#   pivot_wider(names_from = gene_name, values_from = count, values_fill = 0)
+# 
+# gene_count_bins <- gene_count %>%
+#   left_join(tolerance %>% select(sample, tolerance_bin), by = "sample")  %>%
+#    pivot_longer(
+#     cols = 2:3,                # columns with gene counts
+#     names_to = "gene",
+#     values_to = "count"
+#   ) %>%
+#   filter(!is.na(tolerance_bin))
+# 
+# all_count <- snvs_1801.21 %>%
+#   filter(mutation_type == "N") %>%
+#   group_by(sample) %>%
+#   summarize(count=n(), .groups = "drop")
+# 
+# all_count_bins <- all_count %>%
+#   left_join(tolerance %>% select(sample, tolerance_bin), by = "sample") %>%
+#   filter(!is.na(tolerance_bin))
+# 
+# all_count_bins$gene <- "all genes"
+# 
+# all_count_bins <- all_count_bins[, c("sample", "tolerance_bin", "gene", "count")]
+# 
+# combined_bins <- rbind(gene_count_bins,all_count_bins)
+# 
+# combined_bins$tolerance_bin <- factor(combined_bins$tolerance_bin,
+#                                    levels = c("Low/No","Medium","High"))
+# combined_bins$gene <- factor(combined_bins$gene,
+#                           levels = c("hipA","relA","all genes"))
+# 
+# saveRDS(combined_bins, file="1801.21_isolates.RDS")
+```
+
+```{r}
+snvs_bins_1801.21 <- readRDS('1801.21_isolates.RDS')
+
+snvs_bins_1801.21_summary <- snvs_bins_1801.21 %>%
+  group_by(gene, tolerance_bin) %>%
+  summarise(
+    n_isolates = n(),
+    .groups = "drop") %>%
+  left_join(
+    snvs_bins_1801.21 %>%
+      group_by(gene) %>%
+      summarise(max_y = max(count, na.rm = TRUE), .groups = "drop"),
+    by = "gene"
+  ) %>%
+  mutate(y_pos = max_y*1.2)  
+
+snvs_bins_1801.21_filtered <- snvs_bins_1801.21 %>%
+  add_count(gene, tolerance_bin, name = "n_per_group") %>%
+  group_by(gene) %>%
+  filter(n_per_group >= 2) %>%
+  ungroup()
+
+stat.test <- snvs_bins_1801.21_filtered %>%
+  group_by(gene) %>%  # or gene, if faceting by gene
+  pairwise_wilcox_test(
+    count ~ tolerance_bin,
+    paired = FALSE,             
+    p.adjust.method = "BH"
+  ) %>%
+  mutate(
+    p.signif = case_when(
+      p <= 0.001 ~ "***",
+      p <= 0.01 ~ "**",
+      p <= 0.05 ~ "*",
+      TRUE ~ NA_character_    
+    )
+  ) %>%
+  filter(!is.na(p.signif))  
+#stat.test output is blank as there are no significant pairs
+
+snvs_bins_1801.21$gene <- factor(snvs_bins_1801.21$gene, levels = c("hipA","relA","all genes"))
+snvs_bins_1801.21_summary$gene <- factor(snvs_bins_1801.21_summary$gene, levels = c("hipA","relA","all genes"))
+
+#--ggplot: you can adjust sizes of specific elements on plot here--
+snvs <- ggplot(snvs_bins_1801.21 , aes(x = tolerance_bin, y = count, fill = tolerance_bin )) +
+  geom_boxplot(width = 0.1) +
+  geom_blank(aes(y = 0)) +
+  facet_wrap(~gene,scales="free_y", nrow = 2, ncol = 2) +
+  geom_text(data=snvs_bins_1801.21_summary,
+            aes(x = tolerance_bin, y = y_pos, label = paste0("n=", n_isolates)),
+            inherit.aes = FALSE,
+            size = 2) +
+  theme_classic() +
+  labs( x = "Tolerance Bin",
+       y = "# non-synonymous SNVs") +
+  theme_classic(base_size = 8) +
+  theme(legend.position = "none", 
+        panel.grid = element_blank(), 
+        strip.text = element_text(size=7))
+  
+snvs
+
+#Use height and width to adjust size, dpi to adjust text size/resolution for entire figure
+ggsave("1801.21_snvs.png",plot=snvs, width=4, height=3, dpi=300)
+```
+
