@@ -44,3 +44,8 @@ The exact analysis was performed on the 1801.21 subset to identify if similar tr
 ## Instrain compare
 All Instrain profiles (using BMT116 D-3 as reference) were compared using Instrain compare. This calculates popANI between samples and allows us to determine if the MAGs represent the isolates well. For isolate-MAG pairs from the same sample, popANI was summarized at both the [25% and 50% percent_genome_compared thresholds](https://instrain.readthedocs.io/en/latest/important_concepts.html#thresholds-for-determining-same-vs-different-strains)
 
+> Scripts for Instrain profile and compare are stored under instrain/
+
+## Figure generation
+Annotated SNV outputs were processed in Rstudio to generate boxplots for all isolates and the 1801.21 subset.
+> Rmarkdown file is stored under figures/ along with RDS files for each sample set
