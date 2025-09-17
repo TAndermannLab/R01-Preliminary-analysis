@@ -9,8 +9,8 @@ From these samples, 18 isolates are included in this analyses.
 Stool sequences were assembled and binned to obtained metagenome assemblies (MAGs), which were annotated with GTDBtk. E.coli MAGs were retrieved from 13 of the stool sequencing, ranging from 23.11-99.97% completeness and 0.09-40.12% contamination
 
 Summary of samples, isolates and MAGs:
-| Sample	    | # Isolates	| E.coli MAG obtained? |	Completeness (%)	| Contamination (%) |
-| ----------| ----------- | ------------- | ------------- | ------------- |
+|Sample	    |# Isolates	| E.coli MAG obtained? |	Completeness (%)	| Contamination (%) |
+|:---------|:-----------:| :-------------: | :-------------:| :-------------: |
 | 1801.21 PCON| 2  | No	 |  -  |   -   |
 | 1801.21 D56	| 1	 |  No	 |  -  |   -   |
 | 1801.21 D70	| 1	| Yes|	99.7|	3.83 |
