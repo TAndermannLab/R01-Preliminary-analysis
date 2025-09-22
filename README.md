@@ -25,7 +25,7 @@ Summary of samples, isolates and MAGs:
 |BMT126 D-12|2	|Yes	|99.93	|9.43|
 |BMT126 D1|	2	| Yes	|97.89|	1.34|
 |BMT127 D-13|	2	|Yes	|52.37|	1.68|
-|BMT127 D1	2	|Yes	|99.97	|1.87|
+|BMT127 D1|	2	|Yes	|99.97	|1.87|
 |BMT108 D-33|	2	|Yes|	94.5	|13.54|
 |BMT108 D0| 2	|Yes	|90.46	|40.12|
 
