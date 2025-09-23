@@ -35,13 +35,16 @@ Processed reads were mapped to their respective binned MAGs. Reads that mapped t
 
 ## Instrain profile
 [Instrain](https://instrain.readthedocs.io/en/latest/) was utilized to profile samples and identify SNVs in genes of interest.
-For all samples, an isolate obtained from BMT116 D-3 was selected as the reference as it exhibited low tolerance and had the best assembly quality.
+For all samples, an isolate obtained from BMT116 D-3 (TAB679) was selected as the reference as it exhibited low tolerance and was assembled into one continuous contig with hybrid sequencing.
 -  Isolate reads and extracted stool reads were mapped to this reference
 -  Reference genes were predicted using Prodigal and annotated using Bakta
 -  Mapping files, reference assembly and gene files were profiled using Instrain
 -  Instrain SNVs.tsv output file for each profile annotated using the Bakta results. Only non-synonymous SNVs were considered.
 
-The exact analysis was performed on the 1801.21 subset to identify if similar trends could be observed within a single patient. For this subset, an isolate from 1801.21 D56 was used as the reference as it exhibited low tolerance and had the best assembly quality.
+Reference assembly annotated with Bakta: [image]
+[image]:https://github.com/TAndermannLab/R01-Preliminary-analysis/blob/main/TAB679_polished_genome.png
+
+The exact analysis was performed on the 1801.21 subset to identify if similar trends could be observed within a single patient. For this subset, an isolate from 1801.21 D56 (TAB1078) was used as the reference as it exhibited low tolerance and had the best assembly quality.
 
 ## Instrain compare
 All Instrain profiles (using BMT116 D-3 as reference) were compared using Instrain compare. This calculates popANI between samples and allows us to determine if the MAGs represent the isolates well. For isolate-MAG pairs from the same sample, popANI was summarized at both the [25% and 50% percent_genome_compared thresholds](https://instrain.readthedocs.io/en/latest/important_concepts.html#thresholds-for-determining-same-vs-different-strains)
