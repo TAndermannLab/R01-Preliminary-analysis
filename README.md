@@ -42,6 +42,7 @@ For all samples, an isolate obtained from BMT116 D-3 (TAB679) was selected as th
 -  Instrain SNVs.tsv output file for each profile annotated using the Bakta results. Only non-synonymous SNVs were considered.
 
 Reference assembly annotated with Bakta: 
+
 Outer two rings represent protein-coding genes with assigned COG classes (forward & reverse strands), inner ring represents non-coding genes, GC content & GC skew
 ![image](https://github.com/TAndermannLab/R01-Preliminary-analysis/blob/main/TAB679_cog_legend.png)
 
