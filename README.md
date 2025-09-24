@@ -42,7 +42,8 @@ For all samples, an isolate obtained from BMT116 D-3 (TAB679) was selected as th
 -  Instrain SNVs.tsv output file for each profile annotated using the Bakta results. Only non-synonymous SNVs were considered.
 
 Reference assembly annotated with Bakta: 
-![image](https://github.com/TAndermannLab/R01-Preliminary-analysis/blob/main/TAB679_polished_genome.png)
+Outer two rings represent protein-coding genes with assigned COG classes (forward & reverse strands), inner ring represents non-coding genes, GC content & GC skew
+![image](https://github.com/TAndermannLab/R01-Preliminary-analysis/blob/main/TAB679_cog_legend.png)
 
 The exact analysis was performed on the 1801.21 subset to identify if similar trends could be observed within a single patient. For this subset, an isolate from 1801.21 D56 (TAB1078) was used as the reference as it exhibited low tolerance and had the best assembly quality.
 
