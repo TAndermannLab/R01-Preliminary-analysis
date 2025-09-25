@@ -85,7 +85,7 @@ snvs_bins_all_summary <- snvs_bins_all %>%
   ) %>%
   mutate(y_pos = max_y*1.5)  
 
-#--Running wilcoxon test, ptsI gene is not included because it's not detected in Low/High bins--
+#--Running wilcoxon test--
 snvs_bins_all_filtered <- snvs_bins_all %>%
   filter(count != 0) %>%
   add_count(gene, tolerance_bin, name = "n_per_group") %>%
@@ -266,5 +266,6 @@ snvs
 #Use height and width to adjust size, dpi to adjust text size/resolution for entire figure
 ggsave("1801.21_snvs.png",plot=snvs, width=4, height=3, dpi=300)
 ```
+
 
 
