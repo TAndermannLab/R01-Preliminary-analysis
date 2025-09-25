@@ -23,11 +23,11 @@ library(rstatix)
 #   filter(!str_detect(sample,"_nanopore"))
 # snvs_TAB679$sample <- gsub("_illumina","",snvs_TAB679$sample)
 
-snvs_1801.21 <- fread("1801.21_annotated_SNVs.tsv",header=T)
-snvs_1801.21$sample <- gsub("_illumina","",snvs_1801.21$sample)
-# 
-tolerance <- read.csv("ToleranceBins.csv",header=T)
-tolerance$tolerance_bin <- gsub("Low","Low/No", tolerance$tolerance_bin)
+#snvs_1801.21 <- fread("1801.21_annotated_SNVs.tsv",header=T)
+#snvs_1801.21$sample <- gsub("_illumina","",snvs_1801.21$sample)
+ 
+#tolerance <- read.csv("ToleranceBins.csv",header=T)
+#tolerance$tolerance_bin <- gsub("Low","Low/No", tolerance$tolerance_bin)
 ```
 
 --Figure for **all** isolates, with BMT116 D-3 (TAB679) as reference--
@@ -266,4 +266,5 @@ snvs
 #Use height and width to adjust size, dpi to adjust text size/resolution for entire figure
 ggsave("1801.21_snvs.png",plot=snvs, width=4, height=3, dpi=300)
 ```
+
 
