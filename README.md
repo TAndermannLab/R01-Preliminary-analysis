@@ -5,7 +5,7 @@ From Tolerance to Resistance: Adaptive Pathways of Enterobacterales Persistence 
 14 stool samples spanning 4 patients were selected based on the relative abundance of E.coli observed through metagenomic sequencing.
 E.coli strains were isolated from the stool by streaking them on selective media. These strains were sequenced and tested for tolerance against meropenem using a time-kill assays as described by [Alexandersen et al, 2025](https://doi.org/10.1128/spectrum.01124-25). Isolates were exposed to 1ug/ml of meropenem and plated at regular intervals. Tolerance was evaluated as percentage survival after 4 hours, with < 0.01% being considered Low/No tolerance, 0.01-1% considered Medium tolerance and > 1% considered High tolerance. From these samples, 28 isolates are included in this analyses.
 
-Stool sequences were assembled and binned to obtained metagenome assemblies (MAGs), which were annotated with GTDBtk. E.coli MAGs were retrieved from 14 of the stool sequencing, ranging from 23.11-99.97% completeness and 0.09-3.83% contamination
+Stool sequences were assembled and binned to obtained metagenome assemblies (MAGs), which were annotated with GTDBtk. E.coli MAGs were retrieved from 10 of the stool sequencing, ranging from 23.11-99.97% completeness and 0.09-3.83% contamination
 
 Summary of samples, isolates and MAGs:
 |Sample	    |# Isolates	| E.coli MAG obtained? |	Completeness (%)	| Contamination (%) |
