@@ -19,10 +19,13 @@ library(rstatix)
 
 ```{r}
 ##Original datafiles that have been processed into RDS files
-# snvs_TAB679 <- fread("TAB679_annotated_SNVs.tsv",header=T)
+# snvs_TAB679 <- fread("all_annotated_SNVs.tsv",header=T) %>%
+#   filter(!str_detect(sample,"_nanopore")) 
+# snvs_TAB679$sample <- gsub("_illumina","",snvs_TAB679$sample)  
 
 # snvs_1801.21 <- fread("1801.21_annotated_SNVs.tsv",header=T)
-
+# snvs_1801.21$sample <- gsub("_illumina","",snvs_1801.21$sample)
+# 
 # tolerance <- read.csv("ToleranceBins.csv",header=T)
 # tolerance$tolerance_bin <- gsub("Low","Low/No", tolerance$tolerance_bin)
 ```
@@ -31,15 +34,15 @@ library(rstatix)
 ```{r}
 ##Cleaning and organizing the data for plot, don't run this code chunk!
 # genes_of_interest <- c("relA","hipA","ptsI")
-
-# snvs_TAB679_subset <- snvs_TAB679 %>% 
+# 
+# snvs_TAB679_subset <- snvs_TAB679 %>%
 #   filter(gene_name %in% genes_of_interest)%>%
 #   filter(mutation_type == "N")
 # 
 # gene_count <- snvs_TAB679_subset %>%
 #   group_by(sample,gene_name) %>%
 #   summarize(count=n(), .groups = "drop") %>%
-#   pivot_wider(names_from = gene_name, values_from = count, values_fill = 0) 
+#   pivot_wider(names_from = gene_name, values_from = count, values_fill = 0)
 # 
 # gene_count_bins <- gene_count %>%
 #   left_join(tolerance %>% select(sample, tolerance_bin), by = "sample")  %>%
@@ -48,15 +51,15 @@ library(rstatix)
 #     names_to = "gene",
 #     values_to = "count"
 #   ) %>%
-#   filter(!is.na(tolerance_bin)) 
+#   filter(!is.na(tolerance_bin))
 # 
 # all_count <- snvs_TAB679 %>%
 #   filter(mutation_type == "N") %>%
 #   group_by(sample) %>%
-#   summarize(count=n(), .groups = "drop") 
+#   summarize(count=n(), .groups = "drop")
 # 
 # all_count_bins <- all_count %>%
-#   left_join(tolerance %>% select(sample, tolerance_bin), by = "sample") %>% 
+#   left_join(tolerance %>% select(sample, tolerance_bin), by = "sample") %>%
 #   filter(!is.na(tolerance_bin))
 # 
 # all_count_bins$gene <- "all genes"
@@ -65,7 +68,7 @@ library(rstatix)
 # 
 # combined_bins <- rbind(gene_count_bins,all_count_bins)
 # 
-# combined_bins$tolerance_bin <- factor(combined_bins$tolerance_bin, 
+# combined_bins$tolerance_bin <- factor(combined_bins$tolerance_bin,
 #                                    levels = c("Low/No","Medium","High"))
 # combined_bins$gene <- factor(combined_bins$gene,
 #                           levels = c("hipA","relA","ptsI","all genes"))
@@ -75,9 +78,6 @@ library(rstatix)
 
 ```{r}
 snvs_bins_all <- readRDS('all_isolates.RDS')
-# If you want to exclude the outlier sample, add the following filter command above
-# %>%
-#   filter(sample != "BMT108D-33_EcoliC1")
 
 snvs_bins_all_summary <- snvs_bins_all %>%
   group_by(gene, tolerance_bin) %>%
@@ -94,7 +94,16 @@ snvs_bins_all_summary <- snvs_bins_all %>%
 
 #--Running wilcoxon test, ptsI gene is not included because it's not detected in Low/High bins--
 snvs_bins_all_filtered <- snvs_bins_all %>%
-  filter(gene != "ptsI")
+  filter(count != 0) %>%
+  add_count(gene, tolerance_bin, name = "n_per_group") %>%
+  filter(n_per_group >= 2) %>%                           # At least 2 per bin
+  group_by(gene, tolerance_bin) %>%
+  filter(var(count) > 0) %>%                             # Non-zero variance
+  ungroup() %>%
+  group_by(gene) %>%
+  filter(n_distinct(tolerance_bin) >= 2) %>%             # Keep 2+ bins
+  ungroup()
+
 
 all_stat.test <- snvs_bins_all_filtered %>%
   group_by(gene) %>%  # or gene, if faceting by gene
@@ -155,14 +164,15 @@ gene_snvs
 ggsave("all_isolates_snvs.png",plot=gene_snvs, width=4, height=3, dpi=300)
 ```
 
---Figure for **1801.21** isolates, using D56 (TAB1084) as reference--
+--Figure for **1801.21** isolates, using PCON (TAB1078) as reference--
 ```{r}
 ##Cleaning and organizing the data for plot, don't run this code chunk!
 # genes_of_interest <- c("relA","hipA")
+# genes_of_interest <- c("relA","hipA","ptsI")
 # 
 # snvs_1801.21_subset <- snvs_1801.21 %>%
-#   filter(gene_name %in% genes_of_interest)%>%
-#   filter(mutation_type == "N")
+#    filter(gene_name %in% genes_of_interest)%>%
+#    filter(mutation_type == "N")
 # 
 # gene_count <- snvs_1801.21_subset %>%
 #   group_by(sample,gene_name) %>%
@@ -172,7 +182,7 @@ ggsave("all_isolates_snvs.png",plot=gene_snvs, width=4, height=3, dpi=300)
 # gene_count_bins <- gene_count %>%
 #   left_join(tolerance %>% select(sample, tolerance_bin), by = "sample")  %>%
 #    pivot_longer(
-#     cols = 2:3,                # columns with gene counts
+#     cols = 2:4,                # columns with gene counts
 #     names_to = "gene",
 #     values_to = "count"
 #   ) %>%
@@ -196,7 +206,7 @@ ggsave("all_isolates_snvs.png",plot=gene_snvs, width=4, height=3, dpi=300)
 # combined_bins$tolerance_bin <- factor(combined_bins$tolerance_bin,
 #                                    levels = c("Low/No","Medium","High"))
 # combined_bins$gene <- factor(combined_bins$gene,
-#                           levels = c("hipA","relA","all genes"))
+#                           levels = c("hipA","relA","ptsI","all genes"))
 # 
 # saveRDS(combined_bins, file="1801.21_isolates.RDS")
 ```
@@ -218,9 +228,14 @@ snvs_bins_1801.21_summary <- snvs_bins_1801.21 %>%
   mutate(y_pos = max_y*1.2)  
 
 snvs_bins_1801.21_filtered <- snvs_bins_1801.21 %>%
+  filter(count != 0) %>%
   add_count(gene, tolerance_bin, name = "n_per_group") %>%
+  filter(n_per_group >= 2) %>%                           # At least 2 per bin
+  group_by(gene, tolerance_bin) %>%
+  filter(var(count) > 0) %>%                             # Non-zero variance
+  ungroup() %>%
   group_by(gene) %>%
-  filter(n_per_group >= 2) %>%
+  filter(n_distinct(tolerance_bin) >= 2) %>%             # Keep 2+ bins
   ungroup()
 
 stat.test <- snvs_bins_1801.21_filtered %>%
@@ -241,8 +256,8 @@ stat.test <- snvs_bins_1801.21_filtered %>%
   filter(!is.na(p.signif))  
 #stat.test output is blank as there are no significant pairs
 
-snvs_bins_1801.21$gene <- factor(snvs_bins_1801.21$gene, levels = c("hipA","relA","all genes"))
-snvs_bins_1801.21_summary$gene <- factor(snvs_bins_1801.21_summary$gene, levels = c("hipA","relA","all genes"))
+snvs_bins_1801.21$gene <- factor(snvs_bins_1801.21$gene, levels = c("hipA","relA","ptsI","all genes"))
+snvs_bins_1801.21_summary$gene <- factor(snvs_bins_1801.21_summary$gene, levels = c("hipA","relA","ptsI","all genes"))
 
 #--ggplot: you can adjust sizes of specific elements on plot here--
 snvs <- ggplot(snvs_bins_1801.21 , aes(x = tolerance_bin, y = count, fill = tolerance_bin )) +
