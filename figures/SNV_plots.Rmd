@@ -20,14 +20,14 @@ library(rstatix)
 ```{r}
 ##Original datafiles that have been processed into RDS files
 # snvs_TAB679 <- fread("all_annotated_SNVs.tsv",header=T) %>%
-#   filter(!str_detect(sample,"_nanopore")) 
-# snvs_TAB679$sample <- gsub("_illumina","",snvs_TAB679$sample)  
+#   filter(!str_detect(sample,"_nanopore"))
+# snvs_TAB679$sample <- gsub("_illumina","",snvs_TAB679$sample)
 
-# snvs_1801.21 <- fread("1801.21_annotated_SNVs.tsv",header=T)
-# snvs_1801.21$sample <- gsub("_illumina","",snvs_1801.21$sample)
+snvs_1801.21 <- fread("1801.21_annotated_SNVs.tsv",header=T)
+snvs_1801.21$sample <- gsub("_illumina","",snvs_1801.21$sample)
 # 
-# tolerance <- read.csv("ToleranceBins.csv",header=T)
-# tolerance$tolerance_bin <- gsub("Low","Low/No", tolerance$tolerance_bin)
+tolerance <- read.csv("ToleranceBins.csv",header=T)
+tolerance$tolerance_bin <- gsub("Low","Low/No", tolerance$tolerance_bin)
 ```
 
 --Figure for **all** isolates, with BMT116 D-3 (TAB679) as reference--
@@ -44,36 +44,29 @@ library(rstatix)
 #   summarize(count=n(), .groups = "drop") %>%
 #   pivot_wider(names_from = gene_name, values_from = count, values_fill = 0)
 # 
-# gene_count_bins <- gene_count %>%
+# all_count <- snvs_TAB679 %>%
+#   filter(mutation_type == "N") %>%
+#   group_by(sample) %>%
+#   summarize(`all genes`=n(), .groups = "drop")
+# 
+# merge_count <- left_join(all_count,gene_count, by="sample")  %>%
+#   mutate(across(where(is.numeric), ~ replace_na(.x, 0)))
+# 
+# merge_count_bins <- merge_count %>%
 #   left_join(tolerance %>% select(sample, tolerance_bin), by = "sample")  %>%
 #    pivot_longer(
-#     cols = 2:4,                # columns with gene counts
+#     cols = 2:5,                # columns with gene counts
 #     names_to = "gene",
 #     values_to = "count"
 #   ) %>%
 #   filter(!is.na(tolerance_bin))
 # 
-# all_count <- snvs_TAB679 %>%
-#   filter(mutation_type == "N") %>%
-#   group_by(sample) %>%
-#   summarize(count=n(), .groups = "drop")
-# 
-# all_count_bins <- all_count %>%
-#   left_join(tolerance %>% select(sample, tolerance_bin), by = "sample") %>%
-#   filter(!is.na(tolerance_bin))
-# 
-# all_count_bins$gene <- "all genes"
-# 
-# all_count_bins <- all_count_bins[, c("sample", "tolerance_bin", "gene", "count")]
-# 
-# combined_bins <- rbind(gene_count_bins,all_count_bins)
-# 
-# combined_bins$tolerance_bin <- factor(combined_bins$tolerance_bin,
+# merge_count_bins$tolerance_bin <- factor(merge_count_bins$tolerance_bin,
 #                                    levels = c("Low/No","Medium","High"))
-# combined_bins$gene <- factor(combined_bins$gene,
+# merge_count_bins$gene <- factor(merge_count_bins$gene,
 #                           levels = c("hipA","relA","ptsI","all genes"))
 # 
-# saveRDS(combined_bins, file="all_isolates.RDS")
+# saveRDS(merge_count_bins, file="all_isolates.RDS")
 ```
 
 ```{r}
@@ -167,7 +160,6 @@ ggsave("all_isolates_snvs.png",plot=gene_snvs, width=4, height=3, dpi=300)
 --Figure for **1801.21** isolates, using PCON (TAB1078) as reference--
 ```{r}
 ##Cleaning and organizing the data for plot, don't run this code chunk!
-# genes_of_interest <- c("relA","hipA")
 # genes_of_interest <- c("relA","hipA","ptsI")
 # 
 # snvs_1801.21_subset <- snvs_1801.21 %>%
@@ -179,36 +171,29 @@ ggsave("all_isolates_snvs.png",plot=gene_snvs, width=4, height=3, dpi=300)
 #   summarize(count=n(), .groups = "drop") %>%
 #   pivot_wider(names_from = gene_name, values_from = count, values_fill = 0)
 # 
-# gene_count_bins <- gene_count %>%
+# all_count <- snvs_1801.21 %>%
+#   filter(mutation_type == "N") %>%
+#   group_by(sample) %>%
+#   summarize(`all genes`=n(), .groups = "drop")
+# 
+# merge_count <- left_join(all_count,gene_count, by="sample")  %>%
+#   mutate(across(where(is.numeric), ~ replace_na(.x, 0)))
+# 
+# merge_count_bins <- merge_count %>%
 #   left_join(tolerance %>% select(sample, tolerance_bin), by = "sample")  %>%
 #    pivot_longer(
-#     cols = 2:4,                # columns with gene counts
+#     cols = 2:5,                # columns with gene counts
 #     names_to = "gene",
 #     values_to = "count"
 #   ) %>%
 #   filter(!is.na(tolerance_bin))
 # 
-# all_count <- snvs_1801.21 %>%
-#   filter(mutation_type == "N") %>%
-#   group_by(sample) %>%
-#   summarize(count=n(), .groups = "drop")
-# 
-# all_count_bins <- all_count %>%
-#   left_join(tolerance %>% select(sample, tolerance_bin), by = "sample") %>%
-#   filter(!is.na(tolerance_bin))
-# 
-# all_count_bins$gene <- "all genes"
-# 
-# all_count_bins <- all_count_bins[, c("sample", "tolerance_bin", "gene", "count")]
-# 
-# combined_bins <- rbind(gene_count_bins,all_count_bins)
-# 
-# combined_bins$tolerance_bin <- factor(combined_bins$tolerance_bin,
+# merge_count_bins$tolerance_bin <- factor(merge_count_bins$tolerance_bin,
 #                                    levels = c("Low/No","Medium","High"))
-# combined_bins$gene <- factor(combined_bins$gene,
+# merge_count_bins$gene <- factor(merge_count_bins$gene,
 #                           levels = c("hipA","relA","ptsI","all genes"))
 # 
-# saveRDS(combined_bins, file="1801.21_isolates.RDS")
+# saveRDS(merge_count_bins, file="1801.21_isolates.RDS")
 ```
 
 ```{r}
