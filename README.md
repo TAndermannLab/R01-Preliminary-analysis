@@ -2,8 +2,8 @@
 From Tolerance to Resistance: Adaptive Pathways of Enterobacterales Persistence in the gut Under Antibiotic Pressure
 
 ## Sample overview
-18 stool samples spanning 6 patients were selected based on the relative abundance of E.coli observed through metagenomic sequencing.
-E.coli strains were isolated from the stool by streaking them on selective media. These strains were sequenced and tested for tolerance against meropenem using a time-kill assays as described by [Alexandersen et al, 2025](https://doi.org/10.1128/spectrum.01124-25). Isolates were exposed to 1ug/ml of meropenem and plated at regular intervals. Tolerance was evaluated as percentage survival after 4 hours, with < 0.01% being considered Low/No tolerance, 0.01-1% considered Medium tolerance and > 1% considered High tolerance. From these samples, 36 isolates are included in this analyses.
+14 stool samples spanning 4 patients were selected based on the relative abundance of E.coli observed through metagenomic sequencing.
+E.coli strains were isolated from the stool by streaking them on selective media. These strains were sequenced and tested for tolerance against meropenem using a time-kill assays as described by [Alexandersen et al, 2025](https://doi.org/10.1128/spectrum.01124-25). Isolates were exposed to 1ug/ml of meropenem and plated at regular intervals. Tolerance was evaluated as percentage survival after 4 hours, with < 0.01% being considered Low/No tolerance, 0.01-1% considered Medium tolerance and > 1% considered High tolerance. From these samples, 28 isolates are included in this analyses.
 
 Stool sequences were assembled and binned to obtained metagenome assemblies (MAGs), which were annotated with GTDBtk. E.coli MAGs were retrieved from 14 of the stool sequencing, ranging from 23.11-99.97% completeness and 0.09-40.12% contamination
 
@@ -22,12 +22,8 @@ Summary of samples, isolates and MAGs:
 |BMT116 D1|2	|Yes|	99.97	|0.71|
 |BMT119 D-7|2	|Yes	|23.11|	0.16|
 |BMT119 D1|2	|Yes	|93.04	|3.28|
-|BMT126 D-12|2	|Yes	|99.93	|9.43|
-|BMT126 D1|	2	| Yes	|97.89|	1.34|
 |BMT127 D-13|	2	|Yes	|52.37|	1.68|
 |BMT127 D1|	2	|Yes	|99.97	|1.87|
-|BMT108 D-33|	2	|Yes|	94.5	|13.54|
-|BMT108 D0| 2	|Yes	|90.46	|40.12|
 
 ## Extracting E.coli reads from stool seqeunces
 Processed reads were mapped to their respective binned MAGs. Reads that mapped to bins annotated as E.coli were extracted.
